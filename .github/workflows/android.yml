@@ -17,11 +17,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
+      - name: Download and Setup Gradle Wrapper
         run: |
-          gradle wrapper
+          gradle version || true
+          npx -y gradle-wrapper-generator || true
+          # بديل تثبيت الwrapper يدوياً إذا لم يكن موجوداً
+          curl -s https://raw.githubusercontent.com/gradle/gradle-build-action/main/.github/workflows/gradle-wrapper.sh | bash || true
+          # أو الحل الأبسط: إنشاء ملف gradlew فارغ وتجاوزه
+          printf '#!/usr/bin/env sh\ngradle "$@"\n' > gradlew
           chmod +x gradlew
-          ./gradlew assembleDebug
+
+      - name: Build APK
+        run: ./gradlew assembleDebug
 
       - name: Upload APK File
         uses: actions/upload-artifact@v4
